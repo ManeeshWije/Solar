@@ -398,12 +398,18 @@ let uranusCheck = false;
 let neptuneCheck = false;
 let plutoCheck = false;
 
+const freeLookInstructions = () => {
+	// if free look is clicked, display movement container
+	document.getElementById("movement-container").style.display = "flex";
+};
+
 // api call to get planet info
 const getInfo = (index) => {
 	// fetch data from api and set state
 	fetch("https://api.le-systeme-solaire.net/rest/bodies/")
 		.then((response) => response.json())
 		.then((data) => {
+			document.getElementById("movement-container").style.display = "none";
 			// console.log(data.bodies);
 			// create card with data
 			let card = document.createElement("div");
@@ -470,6 +476,7 @@ const getInfo = (index) => {
 };
 
 document.getElementById("look").addEventListener("click", () => {
+	freeLookInstructions();
 	freeCheck = true;
 	mercuryCheck = false;
 	venusCheck = false;

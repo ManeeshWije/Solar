@@ -95,3 +95,17 @@ code {
 .card-body {
 	line-height: 5px;
 }
+
+#movement-container {
+	display: flex;
+	flex-wrap: wrap;
+	width: 100%;
+	padding: 10px;
+	position: absolute;
+	font-size: 15px;
+}
+
+#movement-container h2 {
+	font-size: 20px;
+	font-weight: bold;
+}
