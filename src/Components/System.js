@@ -29,6 +29,15 @@ controls.enabled = true;
 const minPan = new THREE.Vector3(-400, -400, -400);
 const maxPan = new THREE.Vector3(400, 400, 400);
 
+var _v = new THREE.Vector3();
+
+controls.addEventListener("change", function () {
+	_v.copy(controls.target);
+	controls.target.clamp(minPan, maxPan);
+	_v.sub(controls.target);
+	camera.position.sub(_v);
+});
+
 // Gonna use this later for asteriod belt and stuff
 // const stars = () => {
 // 	const geometry = new THREE.SphereGeometry(0.25, 24, 24);
@@ -364,6 +373,17 @@ const freeLook = () => {
 	controls.minDistance = 50;
 	controls.maxDistance = 900;
 	controls.enabled = true;
+	const minPan = new THREE.Vector3(-400, -400, -400);
+	const maxPan = new THREE.Vector3(400, 400, 400);
+
+	var _v = new THREE.Vector3();
+
+	controls.addEventListener("change", function () {
+		_v.copy(controls.target);
+		controls.target.clamp(minPan, maxPan);
+		_v.sub(controls.target);
+		camera.position.sub(_v);
+	});
 };
 
 // flags to switch between planet views
