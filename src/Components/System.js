@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from "react";
 import * as THREE from "three";
 import { Vector3 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 // Setup
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 3000);
 const renderer = new THREE.WebGLRenderer();
 const loader = new THREE.TextureLoader();
 renderer.setPixelRatio(window.devicePixelRatio);
@@ -22,17 +21,13 @@ const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
 pointLight.position.set(0, 0, 0);
 scene.add(pointLight, ambientLight);
 
-// Helpers
-// const lightHelper = new THREE.PointLightHelper(pointLight);
-// const gridHelper = new THREE.GridHelper(1000, 50);
-// scene.add(gridHelper, lightHelper);
-
 // Mouse controls
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.minDistance = 50;
 controls.maxDistance = 900;
-controls.enablePan = false;
 controls.enabled = true;
+const minPan = new THREE.Vector3(-400, -400, -400);
+const maxPan = new THREE.Vector3(400, 400, 400);
 
 // Gonna use this later for asteriod belt and stuff
 // const stars = () => {
@@ -51,7 +46,15 @@ controls.enabled = true;
 
 // Set background image
 const bg = loader.load(require("../assets/stars.jpg"));
-scene.background = bg;
+// scene.background = bg;
+const bgSphere = new THREE.Mesh(
+	new THREE.BoxGeometry(2800, 2800, 2800),
+	new THREE.MeshBasicMaterial({
+		map: bg,
+		side: THREE.DoubleSide,
+	})
+);
+scene.add(bgSphere);
 
 // Create all planets and add them to the scene
 // sun
@@ -104,7 +107,8 @@ const earthTexture = loader.load(require("../assets/earth.jpeg"));
 const earthMaterial = new THREE.MeshStandardMaterial({ map: earthTexture });
 const earth = new THREE.Mesh(earthGeo, earthMaterial);
 earth.position.set(0, 0, 100);
-earth.rotateX(0.2);
+earth.rotateX(0.5);
+
 scene.add(earth);
 // earth orbit path visualization
 const earthPath = new THREE.RingGeometry(100, 100.5, 100);
@@ -116,6 +120,7 @@ const earthPathMaterial = new THREE.MeshBasicMaterial({
 });
 const earthPathMesh = new THREE.Mesh(earthPath, earthPathMaterial);
 earthPathMesh.rotateX(Math.PI / 2);
+earth.rotateY(-0.09);
 scene.add(earthPathMesh);
 
 // mars
@@ -124,7 +129,7 @@ const marsTexture = loader.load(require("../assets/mars.jpeg"));
 const marsMaterial = new THREE.MeshStandardMaterial({ map: marsTexture });
 const mars = new THREE.Mesh(marsGeo, marsMaterial);
 mars.position.set(0, 0, 120);
-mars.rotateX(0.2);
+mars.rotateX(0.5);
 scene.add(mars);
 // mars orbit path visualization
 const marsPath = new THREE.RingGeometry(120, 120.5, 100);
@@ -163,6 +168,7 @@ const saturnTexture = loader.load(require("../assets/saturn.jpeg"));
 const saturnMaterial = new THREE.MeshStandardMaterial({ map: saturnTexture });
 const saturn = new THREE.Mesh(saturnGeo, saturnMaterial);
 saturn.position.set(0, 0, 200);
+saturn.rotateX(0.55);
 scene.add(saturn);
 // saturn orbit path visualization
 const saturnPath = new THREE.RingGeometry(200, 200.5, 100);
@@ -182,6 +188,7 @@ const uranusTexture = loader.load(require("../assets/uranus.jpeg"));
 const uranusMaterial = new THREE.MeshStandardMaterial({ map: uranusTexture });
 const uranus = new THREE.Mesh(uranusGeo, uranusMaterial);
 uranus.position.set(0, 0, 240);
+uranus.rotateX(1);
 scene.add(uranus);
 // uranus orbit path visualization
 const uranusPath = new THREE.RingGeometry(240, 240.5, 100);
@@ -201,6 +208,7 @@ const neptuneGeo = new THREE.SphereGeometry(6, 32, 32);
 const neptuneTexture = loader.load(require("../assets/neptune.jpeg"));
 const neptuneMaterial = new THREE.MeshStandardMaterial({ map: neptuneTexture });
 const neptune = new THREE.Mesh(neptuneGeo, neptuneMaterial);
+neptune.rotateX(0.6);
 neptune.position.set(0, 0, 280);
 scene.add(neptune);
 // neptune orbit path visualization
@@ -249,15 +257,15 @@ saturnRing.rotateX(45);
 saturnRing.position.set(0, 0, 200);
 scene.add(saturnRing);
 
+// factors for slider
 let orbitFactor = 1;
 let rotateFactor = 1;
 
+// slider stuff (for orbit and rotation)
 document.getElementById("myRange").step = 0.1;
 let slider = document.getElementById("myRange");
 let output = document.getElementById("demo");
-
 output.innerHTML = slider.value;
-
 // Update the current slider value (each time you drag the slider handle)
 slider.oninput = () => {
 	output.innerHTML = slider.value;
@@ -353,12 +361,12 @@ const freeLook = () => {
 	camera.position.setX(200);
 	camera.position.setY(20);
 	const controls = new OrbitControls(camera, renderer.domElement);
-	controls.enabled = true;
 	controls.minDistance = 50;
 	controls.maxDistance = 900;
-	controls.enablePan = false;
+	controls.enabled = true;
 };
 
+// flags to switch between planet views
 let freeCheck = false;
 let mercuryCheck = false;
 let venusCheck = false;
@@ -370,6 +378,7 @@ let uranusCheck = false;
 let neptuneCheck = false;
 let plutoCheck = false;
 
+// api call to get planet info
 const getInfo = (index) => {
 	// fetch data from api and set state
 	fetch("https://api.le-systeme-solaire.net/rest/bodies/")
@@ -434,9 +443,6 @@ const getInfo = (index) => {
 			document.getElementById("card-container").appendChild(card);
 		})
 		.catch((error) => console.log(error));
-	// // remove card if it exists already and create new card
-	// if (document.getElementById("card-container").childNodes.length > 0) {
-	// 	document.getElementById("card-container").removeChild(document.getElementById("card-container").firstChild);
 	// remove all cards if they exist
 	if (document.getElementById("card-container").childNodes.length > 0) {
 		document.getElementById("card-container").innerHTML = "";
@@ -456,9 +462,11 @@ document.getElementById("look").addEventListener("click", () => {
 	plutoCheck = false;
 	// dont want this in animation look or else there are bugs
 	freeLook();
+	if (document.getElementById("card-container").childNodes.length > 0) {
+		document.getElementById("card-container").innerHTML = "";
+	}
 });
-document.getElementById("mercury").addEventListener("click", (e) => {
-	e.preventDefault();
+document.getElementById("mercury").addEventListener("click", () => {
 	mercuryCheck = true;
 	freeCheck = false;
 	venusCheck = false;
@@ -580,7 +588,7 @@ document.getElementById("pluto").addEventListener("click", () => {
 function System() {
 	const animate = (orbitFactor, rotateFactor) => {
 		renderer.render(scene, camera);
-		const EARTH_YEAR = rotateFactor * (2 * Math.PI * (1 / 60) * (1 / 60));
+		const EARTH_YEAR = rotateFactor * (50 * Math.PI * (1 / 60) * (1 / 60));
 		// relative rotations
 		sun.rotation.y += EARTH_YEAR * 0.25;
 		mercury.rotation.y += EARTH_YEAR * 0.5;
@@ -647,7 +655,6 @@ function System() {
 		} else if (plutoCheck) {
 			plutoView();
 		}
-		// requestAnimationFrame(animate);
 		requestAnimationFrame(System);
 	};
 	animate(orbitFactor, rotateFactor);
