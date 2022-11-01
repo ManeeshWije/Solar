@@ -267,8 +267,8 @@ saturnRing.position.set(0, 0, 200);
 scene.add(saturnRing);
 
 // factors for slider
-let orbitFactor = 1;
-let rotateFactor = 1;
+let orbitFactor = 0.1;
+let rotateFactor = 0.1;
 
 // slider stuff (for orbit and rotation)
 document.getElementById("myRange").step = 0.1;
